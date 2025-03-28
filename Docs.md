@@ -46,3 +46,38 @@ React provides the most seamless experience, but Angular and Svelte are fully su
 
 ```sh
 git clone https://github.com/keycloakify/keycloakify-starter
+```
+
+# CSS Customization
+
+This page is a must-read. Even if you plan to redesign the pages at the component level, you should at least understand how to remove the default CSS styles.
+
+## Understanding the CSS Class System
+
+When you inspect the DOM in Storybook, you’ll notice most elements have at least a couple of classes applied to them:
+
+- A class starting with **kc**, for example `kcLabelClass`.
+- One or more classes starting with **pf-**, for example `pf-c-form__label`, `pf-c-form__label-text`.
+
+### Inspecting an Input Label on the Login Page
+
+- Classes beginning with **kc** don’t have any styles applied to them by default. Their sole purpose is to serve as selectors for your custom styles.
+- Classes beginning with **pf-** are **Patternfly** classes. **Patternfly** is a CSS framework created by RedHat, similar to Bootstrap, that the Keycloak team uses to build all of its UIs.
+
+### Removing Default Patternfly Styles
+
+What you’ll want to do is partially or completely remove the **Patternfly** styles and then apply your custom ones.
+
+## Applying Your Custom CSS
+
+**Do not edit** any file in the `public/keycloakify-dev-resources` directory. These files are used by **Storybook** to simulate a Keycloak environment during development, and they aren't part of your actual theme.
+
+To apply your custom CSS style, use the **kc** classes to target the components.
+
+### `src/login/main.css`
+```css
+.kcLabelClass {
+   border: 3px solid red;
+}
+
+
