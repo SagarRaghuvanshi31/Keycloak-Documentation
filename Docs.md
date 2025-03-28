@@ -79,5 +79,27 @@ To apply your custom CSS style, use the **kc** classes to target the components.
 .kcLabelClass {
    border: 3px solid red;
 }
+```
+
+# Testing Your Theme
+
+## Outside of Keycloak
+
+The recommended way to preview your theme as you develop it is to use **Storybook**.
+
+Storybook is a tool that enables testing UI components in isolation. For reference, the following website was generated with Storybook:
+
+### [Keycloakify Storybook](https://storybook.js.org/)
+
+If you prefer to avoid introducing Storybook into your stack, you can still preview your page in **dev mode**. To do so, refer to the official Keycloakify guide.
+
+## Adding Storybook to Your Keycloakify Project
+
+The starter template does not initially contain any story files. Instead, Keycloakify provides a CLI command that allows you to import specific stories for the pages you want to test into your project.
+
+Run the following command in the root of your Keycloakify project and select the pages you want:
+
+```sh
+npx keycloakify add-story
 
 
