@@ -38,7 +38,7 @@ This guide explains how to customize the Keycloak login page step by step.
 We will use the Keycloakify starter template, set up Keycloak using Docker,  
 integrate Storybook for UI testing, modify the login UI, and deploy the custom theme.  
 
-## 1 Clone the Starter Template  
+## 1. Clone the Starter Template  
 
 ### Step 1: Clone the Repository  
 First, clone the Keycloakify starter template from GitHub:  
@@ -56,7 +56,7 @@ cd keycloakify-starter
 npm install
 ```
 
-## 2 Running Keycloak with Docker
+## 2. Running Keycloak with Docker
 
 We will run Keycloak as a Docker container to make testing easier.
 
@@ -79,7 +79,7 @@ docker run -d \
  
  Admin Password: admin
 
-## 3 Running Keycloakify & Developing the Theme
+## 3. Running Keycloakify & Developing the Theme
 
 To start developing the theme, use the following command:
 
@@ -89,7 +89,7 @@ npx keycloakify start-keycloak
 
 This will launch Keycloak with your custom theme.
 
-## 4 Customizing the Keycloak Login Page
+## 4. Customizing the Keycloak Login Page
 
 To modify the login page UI, update the Login.tsx file.
 
@@ -314,7 +314,7 @@ function PasswordWrapper(props: { kcClsx: KcClsx; i18n: I18n; passwordInputId: s
     );
 }
 ```
-## 5 Customizing the Template.tsx
+## 5. Customizing the Template.tsx
 
 To modify the template, update the Template.tsx file.
 
@@ -508,7 +508,7 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
 }
 ```
 
-## 6 Adding a Background Image to the Login Page
+## 6. Adding a Background Image to the Login Page
 
 You have added an image src/login/assist/image.jpg as a background image for the login page.
 
@@ -526,7 +526,7 @@ Image is located at:
 
 /public/login/assist/image.jpg
 
-## 7 Configure Vite for Asset Loading
+## 7. Configure Vite for Asset Loading
 
 To ensure that assets like images load correctly, update the Vite configuration file.
 
@@ -546,7 +546,7 @@ export default defineConfig({
 });
 ```
 
-## 8 Deploying & Viewing the Custom Keycloak Theme
+## 8. Deploying & Viewing the Custom Keycloak Theme
 
 ### Step 1: Build the Custom Keycloak Theme
 
@@ -584,7 +584,7 @@ Your theme is accessible at:
 
 https://my-theme.keycloakify.dev/
 
-## 9 Verify the Theme in Keycloak
+## 9. Verify the Theme in Keycloak
 
 Login to Keycloak Admin Console
 
