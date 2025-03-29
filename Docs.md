@@ -30,8 +30,7 @@ You might be wondering why you would need a third-party tool like Keycloakify to
 - **Leverage Modern Frontend Technologies**: Keycloakify enables you to use TypeScript, React, Angular, Svelte, and any styling solution or component library you prefer, such as Tailwind, MUI, shadcn/ui, or plain CSS.
 - **Streamlined Testing**: Keycloakify makes it easy to test your theme both inside and outside Keycloak, with hot reloading for a smoother development experience.
 - **Automated Theme Bundling**: Keycloakify bundles your theme into a JAR file, ready to import directly into Keycloak.
-- **Community Support**: If you're stuck or need guidance, reach out through our **Discord channel** or **GitHub issues**.
-
+  
 # Customizing Keycloak Login Page Theme  
 
 This guide explains how to customize the Keycloak login page step by step.  
