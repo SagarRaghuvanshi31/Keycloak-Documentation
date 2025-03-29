@@ -1,6 +1,8 @@
 # Keycloak
 
-## Keycloakify Overview
+Keycloak is an open-source identity and access management (IAM) tool that provides authentication, authorization, and user management for applications. It supports Single Sign-On (SSO), social logins, multi-factor authentication (MFA), role-based access control (RBAC), and integrates with LDAP/Active Directory. It works with OAuth 2.0, OpenID Connect, and SAML to secure apps without custom authentication logic.
+
+### Keycloakify Overview
 
 Keycloakify is a tool for creating custom Keycloak themes, enabling you to modify the appearance and behavior of Keycloak's user interfaces. This includes:
 
@@ -11,95 +13,576 @@ Keycloakify is a tool for creating custom Keycloak themes, enabling you to modif
 
 For a visual preview of these UIs as they appear with Keycloak's built-in theme, visit the **Storybook demonstration**.
 
-## Why Choose Keycloakify?
+### Why Choose Keycloakify?
 
 You might be wondering why you would need a third-party tool like Keycloakify to create your custom UIs instead of relying solely on Keycloak's built-in theming system. Here are a few reasons:
 
 - **Leverage Modern Frontend Technologies**: Keycloakify enables you to use TypeScript, React, Angular, Svelte, and any styling solution or component library you prefer, such as Tailwind, MUI, shadcn/ui, or plain CSS.
 - **Streamlined Testing**: Keycloakify makes it easy to test your theme both inside and outside Keycloak, with hot reloading for a smoother development experience.
 - **Automated Theme Bundling**: Keycloakify bundles your theme into a JAR file, ready to import directly into Keycloak.
-- **Version Compatibility**: Themes generated with Keycloakify are backward compatible with Keycloak versions as far back as 11 and are designed to remain compatible with future Keycloak updates.
-- **Built-In Real-Time Validation**: Keycloakify includes real-time frontend validation by default. For example, users receive instant feedback, such as *"The password must be at least 12 characters long,"* rather than waiting until they press the submit button.
 - **Community Support**: If you're stuck or need guidance, reach out through our **Discord channel** or **GitHub issues**.
 
-If you’re still unsure or want a better understanding before committing to using Keycloakify, check out this guide:
+# Customizing Keycloak Login Page with Docker & Storybook  
 
-[How does Keycloakify work?](#)
+This guide explains how to customize the Keycloak login page step by step.  
+We will use the Keycloakify starter template, set up Keycloak using Docker,  
+integrate Storybook for UI testing, modify the login UI, and deploy the custom theme.  
 
-## Pick Your Framework: React, Angular, or Svelte
+## 1 Clone the Starter Template  
 
-Keycloakify supports **React**, **Angular**, and **Svelte**, allowing you to work with the framework you're most familiar with. 
-
-- If you're only making **CSS-level customizations**, any of these frameworks will work.
-- **React is recommended** for the smoothest experience, as it has the most complete integration.
-
-### Considerations for Angular and Svelte Users:
-- **Account Themes**: The starting UI differs from Keycloak's default, requiring additional adjustments.
-- **Admin Themes**: Only **React** supports custom Admin UIs.
-- **Angular Setup**: Keycloakify **cannot be directly installed** in an existing Angular project. Themes must be standalone projects or a subproject in a monorepo.
-
-React provides the most seamless experience, but Angular and Svelte are fully supported for login and account themes with some extra effort.
-
-## Quick Start
-
-### Clone the Starter Template
+### Step 1: Clone the Repository  
+First, clone the Keycloakify starter template from GitHub:  
 
 ```sh
-git clone https://github.com/keycloakify/keycloakify-starter
+git clone https://github.com/keycloakify/keycloakify-starter.git
 ```
 
-# CSS Customization
+### Step 2: Install Dependencies
 
-This page is a must-read. Even if you plan to redesign the pages at the component level, you should at least understand how to remove the default CSS styles.
+After cloning, navigate into the project directory and install dependencies:
 
-## Understanding the CSS Class System
+```
+cd keycloakify-starter
+npm install
+```
 
-When you inspect the DOM in Storybook, you’ll notice most elements have at least a couple of classes applied to them:
+## 2 Running Keycloak with Docker
 
-- A class starting with **kc**, for example `kcLabelClass`.
-- One or more classes starting with **pf-**, for example `pf-c-form__label`, `pf-c-form__label-text`.
+We will run Keycloak as a Docker container to make testing easier.
 
-### Inspecting an Input Label on the Login Page
+### Step 1: Start Keycloak Using Docker
 
-- Classes beginning with **kc** don’t have any styles applied to them by default. Their sole purpose is to serve as selectors for your custom styles.
-- Classes beginning with **pf-** are **Patternfly** classes. **Patternfly** is a CSS framework created by RedHat, similar to Bootstrap, that the Keycloak team uses to build all of its UIs.
+Run the following command to start a Keycloak instance:
 
-### Removing Default Patternfly Styles
+```
+docker run -d \
+  --name keycloak \
+  -p 8080:8080 \
+  -e KEYCLOAK_ADMIN=admin \
+  -e KEYCLOAK_ADMIN_PASSWORD=admin \
+  quay.io/keycloak/keycloak:latest \
+  start-dev
+```
+ Keycloak Admin Console will be available at: http://localhost:8080
+ 
+ Admin Username: admin
+ 
+ Admin Password: admin
 
-What you’ll want to do is partially or completely remove the **Patternfly** styles and then apply your custom ones.
+## 3 Running Keycloakify & Developing the Theme
 
-## Applying Your Custom CSS
+To start developing the theme, use the following command:
 
-**Do not edit** any file in the `public/keycloakify-dev-resources` directory. These files are used by **Storybook** to simulate a Keycloak environment during development, and they aren't part of your actual theme.
+```
+npx keycloakify start-keycloak
+```
 
-To apply your custom CSS style, use the **kc** classes to target the components.
+This will launch Keycloak with your custom theme.
 
-### `src/login/main.css`
-```css
-.kcLabelClass {
-   border: 3px solid red;
+## 4 Customizing the Keycloak Login Page
+
+To modify the login page UI, update the Login.tsx file.
+
+```
+import type { JSX } from "keycloakify/tools/JSX";
+import { useState } from "react";
+import { kcSanitize } from "keycloakify/lib/kcSanitize";
+import { useIsPasswordRevealed } from "keycloakify/tools/useIsPasswordRevealed";
+import { clsx } from "keycloakify/tools/clsx";
+import type { PageProps } from "keycloakify/login/pages/PageProps";
+import { getKcClsx, type KcClsx } from "keycloakify/login/lib/kcClsx";
+import type { KcContext } from "../KcContext";
+import type { I18n } from "../i18n";
+
+export default function Login(props: PageProps<Extract<KcContext, { pageId: "login.ftl" }>, I18n>) {
+    const { kcContext, i18n, doUseDefaultCss, Template, classes } = props;
+
+    const { kcClsx } = getKcClsx({
+        doUseDefaultCss,
+        classes
+    });
+
+    const { social, realm, url, usernameHidden, login, auth, registrationDisabled, messagesPerField } = kcContext;
+
+    const { msg, msgStr } = i18n;
+
+    const [isLoginButtonDisabled, setIsLoginButtonDisabled] = useState(false);
+
+    return (
+        <Template
+            kcContext={kcContext}
+            i18n={i18n}
+            doUseDefaultCss={doUseDefaultCss}
+            classes={classes}
+            displayMessage={!messagesPerField.existsError("username", "password")}
+            headerNode={msg("loginAccountTitle")}
+            displayInfo={realm.password && realm.registrationAllowed && !registrationDisabled}
+            infoNode={
+                <div id="kc-registration-container">
+                    <div id="kc-registration">
+                        <span>
+                            {msg("noAccount")}{" "}
+                            <a tabIndex={8} href={url.registrationUrl}>
+                                {msg("doRegister")}
+                            </a>
+                        </span>
+                    </div>
+                </div>
+            }
+            socialProvidersNode={
+                <>
+                    {realm.password && social?.providers !== undefined && social.providers.length !== 0 && (
+                        <div id="kc-social-providers" className={kcClsx("kcFormSocialAccountSectionClass")}>
+                            <hr />
+                            <h2>{msg("identity-provider-login-label")}</h2>
+                            <ul className={kcClsx("kcFormSocialAccountListClass", social.providers.length > 3 && "kcFormSocialAccountListGridClass")}>
+                                {social.providers.map((...[p, , providers]) => (
+                                    <li key={p.alias}>
+                                        <a
+                                            id={`social-${p.alias}`}
+                                            className={kcClsx(
+                                                "kcFormSocialAccountListButtonClass",
+                                                providers.length > 3 && "kcFormSocialAccountGridItem"
+                                            )}
+                                            type="button"
+                                            href={p.loginUrl}
+                                        >
+                                            {p.iconClasses && <i className={clsx(kcClsx("kcCommonLogoIdP"), p.iconClasses)} aria-hidden="true"></i>}
+                                            <span
+                                                className={clsx(kcClsx("kcFormSocialAccountNameClass"), p.iconClasses && "kc-social-icon-text")}
+                                                dangerouslySetInnerHTML={{ __html: kcSanitize(p.displayName) }}
+                                            ></span>
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </>
+            }
+        >
+            <div id="kc-form">
+                <div id="kc-form-wrapper">
+                    {realm.password && (
+                        <form
+                            id="kc-form-login"
+                            onSubmit={() => {
+                                setIsLoginButtonDisabled(true);
+                                return true;
+                            }}
+                            action={url.loginAction}
+                            method="post"
+                        >
+                            {!usernameHidden && (
+                                <div className={kcClsx("kcFormGroupClass")}>
+                                    <label htmlFor="username" className={kcClsx("kcLabelClass")}>
+                                        {!realm.loginWithEmailAllowed
+                                            ? msg("username")
+                                            : !realm.registrationEmailAsUsername
+                                              ? msg("usernameOrEmail")
+                                              : msg("email")}
+                                    </label>
+                                    <input
+                                        tabIndex={2}
+                                        id="username"
+                                        className={kcClsx("kcInputClass")}
+                                        name="username"
+                                        defaultValue={login.username ?? ""}
+                                        type="text"
+                                        autoFocus
+                                        autoComplete="username"
+                                        aria-invalid={messagesPerField.existsError("username", "password")}
+                                    />
+                                    {messagesPerField.existsError("username", "password") && (
+                                        <span
+                                            id="input-error"
+                                            className={kcClsx("kcInputErrorMessageClass")}
+                                            aria-live="polite"
+                                            dangerouslySetInnerHTML={{
+                                                __html: kcSanitize(messagesPerField.getFirstError("username", "password"))
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            )}
+
+                            <div className={kcClsx("kcFormGroupClass")}>
+                                <label htmlFor="password" className={kcClsx("kcLabelClass")}>
+                                    {msg("password")}
+                                </label>
+                                <PasswordWrapper kcClsx={kcClsx} i18n={i18n} passwordInputId="password">
+                                    <input
+                                        tabIndex={3}
+                                        id="password"
+                                        className={kcClsx("kcInputClass")}
+                                        name="password"
+                                        type="password"
+                                        autoComplete="current-password"
+                                        aria-invalid={messagesPerField.existsError("username", "password")}
+                                    />
+                                </PasswordWrapper>
+                                {usernameHidden && messagesPerField.existsError("username", "password") && (
+                                    <span
+                                        id="input-error"
+                                        className={kcClsx("kcInputErrorMessageClass")}
+                                        aria-live="polite"
+                                        dangerouslySetInnerHTML={{
+                                            __html: kcSanitize(messagesPerField.getFirstError("username", "password"))
+                                        }}
+                                    />
+                                )}
+                            </div>
+
+                            <div className={kcClsx("kcFormGroupClass", "kcFormSettingClass")}>
+                                <div id="kc-form-options">
+                                    {realm.rememberMe && !usernameHidden && (
+                                        <div className="checkbox">
+                                            <label>
+                                                <input
+                                                    tabIndex={5}
+                                                    id="rememberMe"
+                                                    name="rememberMe"
+                                                    type="checkbox"
+                                                    defaultChecked={!!login.rememberMe}
+                                                />{" "}
+                                                {msg("rememberMe")}
+                                            </label>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className={kcClsx("kcFormOptionsWrapperClass")}>
+                                    {realm.resetPasswordAllowed && (
+                                        <span>
+                                            <a tabIndex={6} href={url.loginResetCredentialsUrl}>
+                                                {msg("doForgotPassword")}
+                                            </a>
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div id="kc-form-buttons" className={kcClsx("kcFormGroupClass")}>
+                                <input type="hidden" id="id-hidden-input" name="credentialId" value={auth.selectedCredential} />
+                                <input
+                                    tabIndex={7}
+                                    disabled={isLoginButtonDisabled}
+                                    className={kcClsx("kcButtonClass", "kcButtonPrimaryClass", "kcButtonBlockClass", "kcButtonLargeClass")}
+                                    name="login"
+                                    id="kc-login"
+                                    type="submit"
+                                    value={msgStr("doLogIn")}
+                                />
+                            </div>
+                        </form>
+                    )}
+                </div>
+            </div>
+        </Template>
+    );
+}
+
+function PasswordWrapper(props: { kcClsx: KcClsx; i18n: I18n; passwordInputId: string; children: JSX.Element }) {
+    const { kcClsx, i18n, passwordInputId, children } = props;
+
+    const { msgStr } = i18n;
+
+    const { isPasswordRevealed, toggleIsPasswordRevealed } = useIsPasswordRevealed({ passwordInputId });
+
+    return (
+        <div className={kcClsx("kcInputGroup")}>
+            {children}
+            <button
+                type="button"
+                className={kcClsx("kcFormPasswordVisibilityButtonClass")}
+                aria-label={msgStr(isPasswordRevealed ? "hidePassword" : "showPassword")}
+                aria-controls={passwordInputId}
+                onClick={toggleIsPasswordRevealed}
+            >
+                <i className={kcClsx(isPasswordRevealed ? "kcFormPasswordVisibilityIconHide" : "kcFormPasswordVisibilityIconShow")} aria-hidden />
+            </button>
+        </div>
+    );
+}
+```
+## 5 Customizing the Template.tsx
+
+To modify the template, update the Template.tsx file.
+
+```
+import { useEffect } from "react";
+import { clsx } from "keycloakify/tools/clsx";
+import { kcSanitize } from "keycloakify/lib/kcSanitize";
+import type { TemplateProps } from "keycloakify/login/TemplateProps";
+import { getKcClsx } from "keycloakify/login/lib/kcClsx";
+import { useSetClassName } from "keycloakify/tools/useSetClassName";
+import { useInitialize } from "keycloakify/login/Template.useInitialize";
+import type { I18n } from "./i18n";
+import type { KcContext } from "./KcContext";
+import './main.css';
+
+
+export default function Template(props: TemplateProps<KcContext, I18n>) {
+    const {
+        displayInfo = false,
+        displayMessage = true,
+        displayRequiredFields = false,
+        headerNode,
+        socialProvidersNode = null,
+        infoNode = null,
+        documentTitle,
+        bodyClassName,
+        kcContext,
+        i18n,
+        doUseDefaultCss,
+        classes,
+        children
+    } = props;
+
+    const { kcClsx } = getKcClsx({ doUseDefaultCss, classes });
+
+    const { msg, msgStr, currentLanguage, enabledLanguages } = i18n;
+
+    const { realm, auth, url, message, isAppInitiatedAction } = kcContext;
+
+    useEffect(() => {
+        document.title = documentTitle ?? msgStr("loginTitle", kcContext.realm.displayName);
+    }, []);
+
+    useSetClassName({
+        qualifiedName: "html",
+        className: kcClsx("kcHtmlClass")
+    });
+
+    useSetClassName({
+        qualifiedName: "body",
+        className: bodyClassName ?? kcClsx("kcBodyClass")
+    });
+
+    const { isReadyToRender } = useInitialize({ kcContext, doUseDefaultCss });
+
+    if (!isReadyToRender) {
+        return null;
+    }
+
+    return (
+        <div className={kcClsx("kcLoginClass")}>
+            <div id="kc-header" className={kcClsx("kcHeaderClass")}>
+                <div id="kc-header-wrapper" className={kcClsx("kcHeaderWrapperClass")}>
+                    {msg("loginTitleHtml", realm.displayNameHtml)}
+                </div>
+            </div>
+            <div className={kcClsx("kcFormCardClass")}>
+                <header className={kcClsx("kcFormHeaderClass")}>
+                    {enabledLanguages.length > 1 && (
+                        <div className={kcClsx("kcLocaleMainClass")} id="kc-locale">
+                            <div id="kc-locale-wrapper" className={kcClsx("kcLocaleWrapperClass")}>
+                                <div id="kc-locale-dropdown" className={clsx("menu-button-links", kcClsx("kcLocaleDropDownClass"))}>
+                                    <button
+                                        tabIndex={1}
+                                        id="kc-current-locale-link"
+                                        aria-label={msgStr("languages")}
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        aria-controls="language-switch1"
+                                    >
+                                        {currentLanguage.label}
+                                    </button>
+                                    <ul
+                                        role="menu"
+                                        tabIndex={-1}
+                                        aria-labelledby="kc-current-locale-link"
+                                        aria-activedescendant=""
+                                        id="language-switch1"
+                                        className={kcClsx("kcLocaleListClass")}
+                                    >
+                                        {enabledLanguages.map(({ languageTag, label, href }, i) => (
+                                            <li key={languageTag} className={kcClsx("kcLocaleListItemClass")} role="none">
+                                                <a role="menuitem" id={`language-${i + 1}`} className={kcClsx("kcLocaleItemClass")} href={href}>
+                                                    {label}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {(() => {
+                        const node = !(auth !== undefined && auth.showUsername && !auth.showResetCredentials) ? (
+                            <h1 id="kc-page-title">{headerNode}</h1>
+                        ) : (
+                            <div id="kc-username" className={kcClsx("kcFormGroupClass")}>
+                                <label id="kc-attempted-username">{auth.attemptedUsername}</label>
+                                <a id="reset-login" href={url.loginRestartFlowUrl} aria-label={msgStr("restartLoginTooltip")}>
+                                    <div className="kc-login-tooltip">
+                                        <i className={kcClsx("kcResetFlowIcon")}></i>
+                                        <span className="kc-tooltip-text">{msg("restartLoginTooltip")}</span>
+                                    </div>
+                                </a>
+                            </div>
+                        );
+
+                        if (displayRequiredFields) {
+                            return (
+                                <div className={kcClsx("kcContentWrapperClass")}>
+                                    <div className={clsx(kcClsx("kcLabelWrapperClass"), "subtitle")}>
+                                        <span className="subtitle">
+                                            <span className="required">*</span>
+                                            {msg("requiredFields")}
+                                        </span>
+                                    </div>
+                                    <div className="col-md-10">{node}</div>
+                                </div>
+                            );
+                        }
+
+                        return node;
+                    })()}
+                </header>
+                <div id="kc-content">
+                    <div id="kc-content-wrapper">
+                        {/* App-initiated actions should not see warning messages about the need to complete the action during login. */}
+                        {displayMessage && message !== undefined && (message.type !== "warning" || !isAppInitiatedAction) && (
+                            <div
+                                className={clsx(
+                                    `alert-${message.type}`,
+                                    kcClsx("kcAlertClass"),
+                                    `pf-m-${message?.type === "error" ? "danger" : message.type}`
+                                )}
+                            >
+                                <div className="pf-c-alert__icon">
+                                    {message.type === "success" && <span className={kcClsx("kcFeedbackSuccessIcon")}></span>}
+                                    {message.type === "warning" && <span className={kcClsx("kcFeedbackWarningIcon")}></span>}
+                                    {message.type === "error" && <span className={kcClsx("kcFeedbackErrorIcon")}></span>}
+                                    {message.type === "info" && <span className={kcClsx("kcFeedbackInfoIcon")}></span>}
+                                </div>
+                                <span
+                                    className={kcClsx("kcAlertTitleClass")}
+                                    dangerouslySetInnerHTML={{
+                                        __html: kcSanitize(message.summary)
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {children}
+                        {auth !== undefined && auth.showTryAnotherWayLink && (
+                            <form id="kc-select-try-another-way-form" action={url.loginAction} method="post">
+                                <div className={kcClsx("kcFormGroupClass")}>
+                                    <input type="hidden" name="tryAnotherWay" value="on" />
+                                    <a
+                                        href="#"
+                                        id="try-another-way"
+                                        onClick={() => {
+                                            document.forms["kc-select-try-another-way-form" as never].submit();
+                                            return false;
+                                        }}
+                                    >
+                                        {msg("doTryAnotherWay")}
+                                    </a>
+                                </div>
+                            </form>
+                        )}
+                        {socialProvidersNode}
+                        {displayInfo && (
+                            <div id="kc-info" className={kcClsx("kcSignUpClass")}>
+                                <div id="kc-info-wrapper" className={kcClsx("kcInfoAreaWrapperClass")}>
+                                    {infoNode}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
 ```
 
-# Testing Your Theme
+## 6 Adding a Background Image to the Login Page
 
-## Outside of Keycloak
+You have added an image src/login/assist/image.jpg as a background image for the login page.
 
-The recommended way to preview your theme as you develop it is to use **Storybook**.
+Now, modify the CSS to apply this background image.
 
-Storybook is a tool that enables testing UI components in isolation. For reference, the following website was generated with Storybook:
+```
+body .kcBodyClass {
+    background: url("/login/assist/image.jpg") no-repeat center center;
+    background-size: cover;
+    background-color: rgb(222, 226, 226);
+}
+```
 
-### [Keycloakify Storybook](https://storybook.js.org/)
+Image is located at:
 
-If you prefer to avoid introducing Storybook into your stack, you can still preview your page in **dev mode**. To do so, refer to the official Keycloakify guide.
+/public/login/assist/image.jpg
 
-## Adding Storybook to Your Keycloakify Project
+## 7 Configure Vite for Asset Loading
 
-The starter template does not initially contain any story files. Instead, Keycloakify provides a CLI command that allows you to import specific stories for the pages you want to test into your project.
+To ensure that assets like images load correctly, update the Vite configuration file.
 
-Run the following command in the root of your Keycloakify project and select the pages you want:
+```
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { keycloakify } from "keycloakify/vite-plugin";
 
-```sh
-npx keycloakify add-story
+// https://vitejs.dev/config/
+export default defineConfig({
+    plugins: [
+        react(),
+        keycloakify({
+            accountThemeImplementation: "none"
+        })
+    ]
+});
+```
 
+## 8 Deploying & Viewing the Custom Keycloak Theme
+
+### Step 1: Build the Custom Keycloak Theme
+
+Run the following command to build your theme:
+
+```
+npx keycloakify
+```
+
+#### Then restart Keycloak and copy the theme into the container:
+
+```
+docker cp dist_keycloak/theme/keycloakify keycloak:/opt/keycloak/themes/
+docker restart keycloak
+```
+
+Your background image should now be applied!
+
+### Step 2: Restart Keycloak to Load the Custom Theme
+
+```
+npx keycloakify start-keycloak
+```
+
+The ftl files from ./dist_keycloak/theme are mounted in the Keycloak container.
+
+Keycloak Admin console: http://localhost:8080
+
+user:     admin
+ 
+password: admin
+
+
+Your theme is accessible at:
+
+https://my-theme.keycloakify.dev/
+
+## 9 Verify the Theme in Keycloak
+
+Login to Keycloak Admin Console
+
+Go to Realm Settings → Themes
+
+Select Your Custom Theme from the dropdown
+
+Click Save and refresh the login page
+
+Your customized Keycloak theme is now live!
 
