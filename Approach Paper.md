@@ -1,6 +1,6 @@
 # Approach Paper 
 
-## Customizing Keycloak Login Page
+## Customizing Keycloak Login Page Theme
 
 ### Table of Contents
 
