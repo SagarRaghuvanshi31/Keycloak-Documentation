@@ -1,6 +1,16 @@
 # Keycloak
 
-Keycloak is an open-source identity and access management (IAM) tool that provides authentication, authorization, and user management for applications. It supports Single Sign-On (SSO), social logins, multi-factor authentication (MFA), role-based access control (RBAC), and integrates with LDAP/Active Directory. It works with OAuth 2.0, OpenID Connect, and SAML to secure apps without custom authentication logic.
+Keycloak is an open-source identity and access management (IAM) tool that provides secure authentication and authorization for applications. It enables Single Sign-On (SSO), allowing users to log in once and access multiple services without re-entering credentials.
+
+### Key Features:
+
+User Authentication – Supports passwords, social logins (Google, Facebook), and multi-factor authentication (MFA).
+
+User Management – Allows users to manage their accounts, reset passwords, and update profiles.
+
+Access Control – Provides role-based permissions to restrict access.
+
+Enterprise Integration – Works with LDAP, Active Directory, and OAuth 2.0/OpenID Connect for seamless authentication.
 
 ### Keycloakify Overview
 
@@ -22,7 +32,7 @@ You might be wondering why you would need a third-party tool like Keycloakify to
 - **Automated Theme Bundling**: Keycloakify bundles your theme into a JAR file, ready to import directly into Keycloak.
 - **Community Support**: If you're stuck or need guidance, reach out through our **Discord channel** or **GitHub issues**.
 
-# Customizing Keycloak Login Page with Docker & Storybook  
+# Customizing Keycloak Login Page Theme  
 
 This guide explains how to customize the Keycloak login page step by step.  
 We will use the Keycloakify starter template, set up Keycloak using Docker,  
