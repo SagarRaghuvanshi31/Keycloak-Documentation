@@ -4,32 +4,33 @@ Keycloak is an open-source identity and access management (IAM) tool that provid
 
 ### Key Features:
 
-User Authentication – Supports passwords, social logins (Google, Facebook), and multi-factor authentication (MFA).
+User Authentication: Supports password-based logins, social logins Google, Facebook, and multi-factor authentication for added security.
 
-User Management – Allows users to manage their accounts, reset passwords, and update profiles.
+User Management: Lets users manage their accounts, reset passwords, and update their profiles easily.
 
-Access Control – Provides role-based permissions to restrict access.
-
-Enterprise Integration – Works with LDAP, Active Directory, and OAuth 2.0/OpenID Connect for seamless authentication.
+Access Control: Implements role-based permissions to ensure restricted access based on user roles.
 
 ### Keycloakify Overview
 
 Keycloakify is a tool for creating custom Keycloak themes, enabling you to modify the appearance and behavior of Keycloak's user interfaces. This includes:
 
-- **Login Theme**: The UI for login and registration pages, displayed to users when they attempt to log in or sign up.
-- **Account Theme**: The account management interface, where users can update their email, change their password, and manage other account settings.
-- **Email Theme**: The templates used by Keycloak for automated emails, such as email confirmation or password reset notifications.
-- **Admin Theme**: The Admin Console interface, used by administrators to configure Keycloak.
+Login Theme: The user interface for login and registration, shown when users sign in or create an account.
+
+Account Theme: The dashboard where users can update their email, change passwords, and manage account settings.
+
+Email Theme: Templates for automated emails, like account verification and password reset notifications.
+
+Admin Theme: The interface for administrators to configure and manage Keycloak settings.
 
 For a visual preview of these UIs as they appear with Keycloak's built-in theme, visit the **Storybook demonstration**.
 
 ### Why Choose Keycloakify?
 
-You might be wondering why you would need a third-party tool like Keycloakify to create your custom UIs instead of relying solely on Keycloak's built-in theming system. Here are a few reasons:
+Use Modern Frontend Tools: With Keycloakify, you can build your UI using TypeScript, React, Angular, Svelte, and styling frameworks like Tailwind, MUI, or plain CSS.
 
-- **Leverage Modern Frontend Technologies**: Keycloakify enables you to use TypeScript, React, Angular, Svelte, and any styling solution or component library you prefer, such as Tailwind, MUI, shadcn/ui, or plain CSS.
-- **Streamlined Testing**: Keycloakify makes it easy to test your theme both inside and outside Keycloak, with hot reloading for a smoother development experience.
-- **Automated Theme Bundling**: Keycloakify bundles your theme into a JAR file, ready to import directly into Keycloak.
+Easier Testing: It lets you test your theme both inside and outside Keycloak, with hot reloading for a smoother workflow.
+
+Simple Deployment: Keycloakify automatically packages your theme into a JAR file, ready to import into Keycloak.
   
 # Customizing Keycloak Login Page Theme  
 
